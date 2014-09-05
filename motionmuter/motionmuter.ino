@@ -8,7 +8,7 @@ int audio2_mode = 1;                // Mode 1 = mute if no motion, 2 = mute alwa
 int audio3_state = 1;               // Turn audio 3 on by default
 int audio3_mode = 1;                // Mode 1 = mute if no motion, 2 = mute always, 3 = never mute
 
-long motionDelay = 1000000000;      // Delay in ms between no motion and muting of audio.
+long motionDelay = 600000;          // Delay in ms between no motion and muting of audio. In ms!
 
 // Hardware setup
 int ledPin = 13;                // Pin for the Status LED
@@ -39,8 +39,8 @@ void loop(){
 		        Serial.println("Someone is in the room!");
 			pirState = HIGH;
 			
-			// If we have motion, keep our motion timer the same as our motion delay setting.
-			motionTimer = motionDelay;
+			// If we have motion, keep re-defining our motionTimer
+			motionTimer = millis() + motionDelay;
 		}
 	}
 	else // No motion detected
@@ -53,20 +53,13 @@ void loop(){
 			
 			pirState = LOW;
 		}
-		
-		// If we don't have motion, we want to decrement our motion timer
-		if (motionTimer >= 2)
-		{
-			motionTimer--;
-		}
 	}
 	
-	if (motionTimer == 1) // We haven't seen anyone in a long time
+	if ((motionTimer != -1) && (motionTimer <= millis())) // we havent seen motion in a while.
 	{
-		// Using an if statement and performing these actions before decrementing the timer
-		// one last time, so that these actions are only performed once.
-		
 		Serial.println("Nobody is home. Time to be quiet.");
-		motionTimer--;
+
+                // set motionTimer to -1 so we know we've already performed our motion muting functions.
+		motionTimer = -1;
 	}
 }
